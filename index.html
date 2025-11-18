@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABACUS - 原子轨道第一性原理计算软件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* 顶部导航栏 */
+.navbar {
+	            /* 浅灰色背景，与Logo颜色更搭配 */
+	            background: #f8f9fa; 
+	            border-bottom: 2px solid #e0e0e0; /* 增加底部浅边框 */
+            padding: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+.navbar-container {
+	            max-width: 1400px;
+	            margin: 0 auto;
+	            display: flex;
+	            justify-content: space-between;
+	            align-items: center;
+	            padding: 0 20px;
+	            flex-wrap: wrap; /* 允许换行以适应小屏幕 */
+	        }
+
+	        .nav-menu {
+	            display: flex;
+	            list-style: none;
+	            gap: 0;
+	            /* 确保菜单占据中间位置 */
+	            flex-grow: 1; 
+	            justify-content: center;
+	        }
+
+	        .navbar-controls {
+	            display: flex;
+	            align-items: center;
+	            gap: 15px;
+	            /* 确保在小屏幕上，日期时间显示和建议反馈按钮能正确换行 */
+	            flex-wrap: wrap;
+	        }
+
+	        /* 响应式调整 */
+	        @media (max-width: 1200px) {
+	            .nav-menu {
+	                justify-content: flex-start;
+	            }
+	        }
+
+	        @media (max-width: 1024px) {
+	            .navbar-container {
+	                flex-direction: column;
+	                gap: 15px;
+	                padding: 15px;
+	            }
+	            .logo {
+	                order: 1;
+	            }
+	            .nav-menu {
+	                order: 2;
+	                justify-content: center;
+	                width: 100%;
+	            }
+	            .navbar-controls {
+	                order: 3;
+	                width: 100%;
+	                justify-content: space-between;
+	            }
+	            .search-box {
+	                flex-grow: 1;
+	            }
+	            .search-input {
+	                width: 100%;
+	            }
+	            .datetime-display {
+	                display: none; /* 移除旧的样式 */
+	            }
+	        }
+
+	        @media (max-width: 768px) {
+	            .navbar-controls {
+	                flex-direction: column;
+	                gap: 10px;
+	            }
+	            .font-size-controls {
+	                width: 100%;
+	                justify-content: center;
+	            }
+	            .search-box {
+	                width: 100%;
+	            }
+	        }
+
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 30px 0;
+        }
+
+        .logo-icon {
+            width: auto;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon img {
+            height: 100px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo-icon {
+            width: auto;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 调整宽度以适应新的Logo图片 */
+            max-width: 250px;
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+.nav-link {
+	            display: block;
+	            color: #1e3c72; /* 导航文字改为深蓝色，与Logo主色调搭配 */
+	            text-decoration: none;
+	            padding: 16px 18px;
+	            font-size: 16px;
+	            font-weight: 500;
+	            transition: all 0.3s ease, transform 0.2s ease; /* 增加对 transform 的单独过渡 */
+	            border-bottom: 3px solid transparent;
+	            position: relative; /* 为 box-shadow 动画做准备 */
+	        }
+
+.nav-link:hover {
+	            background-color: rgba(30, 60, 114, 0.1); /* 悬停背景改为深蓝色的浅透明 */
+	            border-bottom-color: #1e3c72; /* 悬停底部边框颜色改为深蓝色 */
+	            /* 悬停时底部边框动画效果 */
+	            transform: translateY(-2px);
+	            box-shadow: 0 4px 0 -1px #1e3c72; /* 模拟一个更明显的底部高亮效果，颜色改为深蓝色 */
+	        }
+
+.nav-link.active {
+	            background-color: rgba(30, 60, 114, 0.15); /* 选中背景改为深蓝色的半透明 */
+	            border-bottom-color: #1e3c72; /* 选中底部边框颜色改为深蓝色 */
+            padding-bottom: 13px;
+        }
+
+        /* 下拉菜单 */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 220px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            margin-top: 0;
+            overflow: hidden;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            margin-top: 5px;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f4ff;
+            border-left-color: #2a5298;
+            padding-left: 24px;
+        }
+
+        /* 主容器 */
+.container {
+	            max-width: 1400px;
+	            margin: 0 auto;
+	            padding: 40px 20px;
+	            position: relative; /* 方便日历卡片定位 */
+	        }
+
+        /* 英雄区域 */
+.hero {
+	            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+	            margin-top: 20px; /* 为日历卡片留出空间 */
+            color: white;
+            padding: 60px 40px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            opacity: 0.95;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2a5298;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 内容卡片 */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #00d4ff;
+            display: inline-block;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            border-left-color: #2a5298;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 12px;
+        }
+
+        .card-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .card-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card-link {
+            color: #0099ff;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 0;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .card-link:hover {
+            color: #2a5298;
+            border-bottom-color: #0099ff;
+            padding-left: 5px;
+        }
+
+        /* 列表样式 */
+        .list-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .list-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .list-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            border-radius: 2px;
+        }
+
+        .list-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .list-item {
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #00d4ff;
+            transition: all 0.2s ease;
+        }
+
+        .list-item:hover {
+            background: #f0f4ff;
+            border-left-color: #2a5298;
+            transform: translateX(5px);
+        }
+
+        .list-item a {
+            color: #0099ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+.list-item a:hover {
+	            color: #2a5298;
+	            text-decoration: underline;
+	        }
+
+	        /* 日历时间卡片样式 */
+	        .datetime-card {
+	            position: absolute;
+	            top: 0;
+	            left: 20px;
+	            width: 200px;
+	            background: white;
+	            border-radius: 10px;
+	            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	            overflow: hidden;
+	            transition: all 0.3s ease;
+	            cursor: pointer;
+	            border-left: 5px solid #00d4ff;
+	            z-index: 500;
+	        }
+
+	        .datetime-card:hover {
+	            transform: translateY(-5px);
+	            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+	        }
+
+	        .date-part {
+	            background-color: #1e3c72;
+	            color: white;
+	            padding: 10px 15px;
+	            font-size: 14px;
+	            font-weight: 600;
+	            text-align: center;
+	        }
+
+	        .time-part {
+	            color: #1e3c72;
+	            padding: 15px;
+	            font-size: 24px;
+	            font-weight: bold;
+	            text-align: center;
+	        }
+
+	        @media (max-width: 768px) {
+	            .datetime-card {
+	                position: static;
+	                width: 100%;
+	                margin-bottom: 20px;
+	            }
+	            .hero {
+	                margin-top: 0;
+	            }
+	        }
+
+        /* 标签 */
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* 底部 */
+        footer {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+            border-top: 3px solid #00d4ff;
+        }
+
+        footer p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #00d4ff;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .nav-link {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+
+            .hero {
+                padding: 40px 20px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .tab-btn:hover {
+            color: #2a5298;
+        }
+
+        .tab-btn.active {
+            color: #2a5298;
+            border-bottom-color: #00d4ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .navbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .font-size-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+.font-btn {
+	            background-color: rgba(30, 60, 114, 0.1); /* 按钮背景改为深蓝色的浅透明 */
+	            color: #1e3c72; /* 按钮文字改为深蓝色 */
+	            border: 1px solid rgba(30, 60, 114, 0.3); /* 按钮边框改为深蓝色的浅透明 */
+	            padding: 5px 10px;
+	            border-radius: 4px;
+	            cursor: pointer;
+	            font-size: 12px;
+	            transition: all 0.2s ease;
+	        }
+
+	        /* 日期时间显示样式 */
+	        /* 移除旧的日期时间显示样式 */
+
+        .font-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+.font-btn.active {
+	            background-color: #1e3c72; /* 选中按钮背景改为深蓝色 */
+	            border-color: #1e3c72;
+	            color: white; /* 选中按钮文字改为白色 */
+	            font-weight: bold;
+	        }
+
+.search-box {
+	            display: flex;
+	            align-items: center;
+	            background-color: rgba(30, 60, 114, 0.1); /* 搜索框背景改为深蓝色的浅透明 */
+	            border-radius: 4px;
+	            overflow: hidden;
+	        }
+
+	        .search-input {
+	            border: none;
+	            padding: 8px 12px;
+	            font-size: 14px;
+	            background: transparent;
+	            color: #1e3c72; /* 搜索文字改为深蓝色 */
+	            outline: none;
+	            width: 150px;
+	        }
+
+	        .search-input::placeholder {
+	            color: rgba(30, 60, 114, 0.7); /* 占位符文字改为深蓝色的浅透明 */
+	        }
+
+	        .search-btn {
+	            background-color: rgba(30, 60, 114, 0.1); /* 按钮背景改为深蓝色的浅透明 */
+	            border: none;
+	            color: #1e3c72; /* 按钮图标改为深蓝色 */
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        html.font-small body {
+            font-size: 14px;
+        }
+
+        html.font-medium body {
+            font-size: 16px;
+        }
+
+        html.font-large body {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+<nav class="navbar">
+	        <div class="navbar-container">
+	            <div class="logo">
+	                <div class="logo-icon">
+	                    <img src="abacus_logo_new.png" alt="ABACUS Logo">
+	                </div>
+	            </div>
+	            <ul class="nav-menu">
+	                <li class="nav-item">
+	                    <a href="#home" class="nav-link active">首页</a>
+	                </li>
+	                <li class="nav-item dropdown">
+	                    <a href="#basic" class="nav-link">基本信息</a>
+	                    <div class="dropdown-menu">
+	                        <a href="#program" class="dropdown-item">程序下载</a>
+	                        <a href="#channels" class="dropdown-item">官方渠道</a>
+	                    </div>
+	                </li>
+	                <li class="nav-item">
+	                    <a href="#news" class="nav-link">新闻</a>
+	                </li>
+	                <li class="nav-item dropdown">
+	                    <a href="#resources" class="nav-link">资料</a>
+	                    <div class="dropdown-menu">
+	                        <a href="#theory" class="dropdown-item">DFT理论</a>
+	                        <a href="#docs" class="dropdown-item">使用者文档</a>
+	                        <a href="#examples" class="dropdown-item">应用例子</a>
+	                        <a href="#videos" class="dropdown-item">视频教程</a>
+	                        <a href="#dev-docs" class="dropdown-item">开发者文档</a>
+	                    </div>
+	                </li>
+	                <li class="nav-item dropdown">
+	                    <a href="#potentials" class="nav-link">赝势与轨道</a>
+	                    <div class="dropdown-menu">
+	                        <a href="#sg15" class="dropdown-item">SG15</a>
+	                        <a href="#dojo" class="dropdown-item">DOJO</a>
+	                        <a href="#apns" class="dropdown-item">APNS</a>
+	                    </div>
+	                </li>
+	                <li class="nav-item dropdown">
+	                    <a href="#tools" class="nav-link">工具与接口</a>
+	                    <div class="dropdown-menu">
+	                        <a href="#online-tools" class="dropdown-item">在线工具</a>
+	                        <a href="#interfaces" class="dropdown-item">软件接口</a>
+	                        <a href="#ml-tools" class="dropdown-item">机器学习</a>
+	                    </div>
+	                </li>
+	                <li class="nav-item">
+	                    <a href="#contact" class="nav-link">联系我们</a>
+	                </li>
+	            </ul>
+	            <div class="navbar-controls">
+                <button id="suggest-btn" class="font-btn" style="font-size: 14px; padding: 5px 10px;">建议反馈</button>
+	                <div class="font-size-controls">
+	                    <button id="font-small" class="font-btn" data-size="small">小</button>
+	                    <button id="font-medium" class="font-btn active" data-size="medium">中</button>
+	                    <button id="font-large" class="font-btn" data-size="large">大</button>
+	                </div>
+	                <div class="search-box">
+	                    <input type="text" placeholder="搜索..." class="search-input">
+	                    <button class="search-btn">🔍</button>
+	                </div>
+	            </div>
+	        </div>
+	    </nav>
+
+    <!-- 主容器 -->
+    <div class="container">
+	        <!-- 日历时间卡片 -->
+	        <div class="datetime-card">
+	            <div class="date-part">
+	                <span id="card-date"></span>
+	            </div>
+	            <div class="time-part">
+	                <span id="card-time"></span>
+	            </div>
+	        </div>
+        <!-- 英雄区域 -->
+        <div class="hero" id="home">
+            <h1>ABACUS</h1>
+            <p>原子轨道第一性原理计算软件 | 大规模电子结构模拟</p>
+            <p style="font-size: 14px; opacity: 0.9;">ABACUS (Atomic-orbital Based Ab-initio Computation at USTC) 是一个开源软件包，用于从第一性原理进行大规模电子结构模拟。由中科院量子信息重点实验室何力新教授团队自2007年以来开发。</p>
+            <div class="hero-buttons">
+                <a href="#download" class="btn btn-primary">立即下载</a>
+                <a href="#docs" class="btn btn-secondary">查看文档</a>
+                <a href="#github" class="btn btn-secondary">GitHub</a>
+            </div>
+        </div>
+
+        <!-- 基本信息部分 -->
+        <div class="section" id="basic">
+            <h2 class="section-title">基本信息</h2>
+            
+            <!-- 程序下载 -->
+            <div class="list-section" id="program">
+                <div class="list-title">程序下载</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <strong>ZIP 下载</strong><br>
+                        <a href="https://github.com/abacusmodeling/abacus-develop" target="_blank">GitHub (官方)</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>镜像源</strong><br>
+                        <a href="https://github.com/deepmodeling/abacus-develop" target="_blank">DeepModeling</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>国内镜像</strong><br>
+                        <a href="https://gitee.com/abacus_dft/abacus-develop" target="_blank">Gitee</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 官方渠道 -->
+            <div class="list-section" id="channels">
+                <div class="list-title">官方渠道</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <strong>微信公众号</strong><br>
+                        ABACUS官方公众号
+                    </div>
+                    <div class="list-item">
+                        <strong>邮箱</strong><br>
+                        <a href="mailto:abacus@ustc.edu.cn" target="_blank">abacus@ustc.edu.cn</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>论坛</strong><br>
+                        <a href="https://forum.abacusmodeling.com" target="_blank">ABACUS论坛</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>知乎</strong><br>
+                        ABACUS官方账号
+                    </div>
+                    <div class="list-item">
+                        <strong>B站</strong><br>
+                        ABACUS官方频道
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新闻部分 -->
+        <div class="section" id="news">
+            <h2 class="section-title">新闻动态</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">📢</div>
+                    <div class="card-title">大版本发布</div>
+                    <div class="card-description">
+                        跟踪ABACUS的主要版本发布，包括新功能、性能改进和重要更新。
+                    </div>
+                    <div class="card-links">
+                        <a href="https://github.com/abacusmodeling/abacus-develop/releases" class="card-link">→ 查看发布历史</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔬</div>
+                    <div class="card-title">研究进展</div>
+                    <div class="card-description">
+                        ABACUS在科学研究中的应用进展和相关发表的学术论文。
+                    </div>
+                    <div class="card-links">
+                        <a href="#publications" class="card-link">→ 查看发表论文</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">开发者大会</div>
+                    <div class="card-description">
+                        ABACUS开发者社区大会，分享开发经验和技术讨论。
+                    </div>
+                    <div class="card-links">
+                        <a href="#events" class="card-link">→ 了解更多</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 资料部分 -->
+        <div class="section" id="resources">
+            <h2 class="section-title">学习资料</h2>
+            
+            <div class="list-section" id="theory">
+                <div class="list-title">DFT理论基础</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        密度泛函理论（DFT）基本原理和应用
+                    </div>
+                    <div class="list-item">
+                        <a href="#" target="_blank">ABACUS中的DFT实现</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section" id="docs">
+                <div class="list-title">使用者文档</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <a href="https://abacus.deepmodeling.com/" target="_blank">📖 在线文档</a>
+                    </div>
+                    <div class="list-item">
+                        <a href="https://gitee.com/mcresearch/abacus-user-guide" target="_blank">📚 用户指南</a>
+                    </div>
+                    <div class="list-item">
+                        安装和配置指南
+                    </div>
+                    <div class="list-item">
+                        输入文件格式说明
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section" id="examples">
+                <div class="list-title">应用例子</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        几何优化示例
+                    </div>
+                    <div class="list-item">
+                        分子动力学模拟
+                    </div>
+                    <div class="list-item">
+                        能带计算
+                    </div>
+                    <div class="list-item">
+                        <a href="#" target="_blank">更多示例代码</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section" id="videos">
+                <div class="list-title">视频教程</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <a href="#" target="_blank">ABACUS安装教程</a>
+                    </div>
+                    <div class="list-item">
+                        <a href="#" target="_blank">基础计算流程</a>
+                    </div>
+                    <div class="list-item">
+                        <a href="#" target="_blank">高级应用教程</a>
+                    </div>
+                    <div class="list-item">
+                        讲师：单斌等
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section" id="dev-docs">
+                <div class="list-title">开发者文档</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <a href="#" target="_blank">📄 v0.2 文档 (PDF)</a>
+                    </div>
+                    <div class="list-item">
+                        代码架构说明
+                    </div>
+                    <div class="list-item">
+                        贡献指南
+                    </div>
+                    <div class="list-item">
+                        API参考
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 赝势与轨道部分 -->
+        <div class="section" id="potentials">
+            <h2 class="section-title">赝势与轨道库</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">⚛️</div>
+                    <div class="card-title">SG15赝势</div>
+                    <div class="card-description">
+                        高精度的SG15赝势库，包含多种元素的赝势和原子轨道基组。
+                    </div>
+                    <div class="card-links">
+                        <a href="http://www.quantum-simulation.org/potentials/sg15_oncv/" class="card-link" target="_blank">→ 赝势库</a>
+                        <a href="#" class="card-link">→ 轨道基组</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">DOJO赝势</div>
+                    <div class="card-description">
+                        DOJO项目提供的高质量赝势，经过严格测试和验证。
+                    </div>
+                    <div class="card-links">
+                        <a href="https://www.pseudo-dojo.org/" class="card-link" target="_blank">→ DOJO官网</a>
+                        <a href="#" class="card-link">→ 下载赝势</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📦</div>
+                    <div class="card-title">APNS轨道库</div>
+                    <div class="card-description">
+                        ABACUS优化的原子轨道基组库，包含多种泛函的轨道参数。
+                    </div>
+                    <div class="card-links">
+                        <a href="https://www.aissquare.com/datasets/detail?pageType=datasets&name=ABACUS-APNS-PPORBs-v1&id=326" class="card-link" target="_blank">→ APNS库</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">自生成赝势</div>
+                    <div class="card-description">
+                        使用ABACUS工具自动生成定制化的赝势和轨道基组。
+                    </div>
+                    <div class="card-links">
+                        <a href="#" class="card-link">→ 生成工具</a>
+                        <a href="#" class="card-link">→ 使用指南</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工具与接口部分 -->
+        <div class="section" id="tools">
+            <h2 class="section-title">工具与接口</h2>
+
+            <div class="list-section" id="online-tools">
+                <div class="list-title">在线工具集</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <strong>输入文件格式转换</strong><br>
+                        支持多种格式的输入文件互相转换
+                    </div>
+                    <div class="list-item">
+                        <strong>可视化工具</strong><br>
+                        原子位置、电荷密度、波函数可视化
+                    </div>
+                    <div class="list-item">
+                        <strong>结构分析</strong><br>
+                        晶体结构分析和对称性检查
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section" id="interfaces">
+                <div class="list-title">软件接口与集成</div>
+                
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 15px; font-size: 16px;">主要接口</h3>
+                    <div class="list-content">
+                        <div class="list-item">
+                            <strong>PYATB</strong><br>
+                            <a href="#" target="_blank">Python紧束缚模拟包</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>Phonopy</strong><br>
+                            <a href="#" target="_blank">声子计算工具</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>Wannier90</strong><br>
+                            <a href="#" target="_blank">最大局域化Wannier函数</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>atomkit</strong><br>
+                            <a href="http://atomkit.cn/" target="_blank">Web界面</a> | 
+                            <a href="https://vaspkit.com/atomkit.html" target="_blank">官网</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 15px; font-size: 16px;">高级工具</h3>
+                    <div class="list-content">
+                        <div class="list-item">
+                            <strong>ASE</strong><br>
+                            <a href="#" target="_blank">原子模拟环境</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>ATST-Tools</strong><br>
+                            <a href="https://github.com/QuantumMisaka/ATST-Tools" target="_blank">过渡态搜索</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>Hefei-NAMD</strong><br>
+                            <a href="#" target="_blank">非绝热分子动力学</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>ShengBTE</strong><br>
+                            <a href="#" target="_blank">声子Boltzmann方程求解器</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 15px; font-size: 16px;">分析工具</h3>
+                    <div class="list-content">
+                        <div class="list-item">
+                            <strong>CANDELA</strong><br>
+                            <a href="#" target="_blank">MD轨迹分析</a>
+                        </div>
+                        <div class="list-item">
+                            <strong>TB2J</strong><br>
+                            <a href="#" target="_blank">磁相互作用计算</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section" id="ml-tools">
+                <div class="list-title">机器学习工具</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <strong>DeePKS</strong><br>
+                        <a href="#" target="_blank">机器学习辅助DFT模型</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>DP-GEN</strong><br>
+                        <a href="#" target="_blank">深度学习势生成工具</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>DeepH</strong><br>
+                        <a href="#" target="_blank">Hamiltonian预测</a>
+                    </div>
+                    <div class="list-item">
+                        <strong>HamGNN</strong><br>
+                        <a href="https://github.com/QuantumLab-ZY/HamGNN" target="_blank">图神经网络Hamiltonian</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section">
+                <div class="list-title">脚本与工作流</div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <strong>原子轨道基组生成</strong><br>
+                        自动化生成和优化轨道基组
+                    </div>
+                    <div class="list-item">
+                        <strong>abacustest</strong><br>
+                        <a href="https://github.com/abacusmodeling/abacustest" target="_blank">测试套件和基准</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能特性 -->
+        <div class="section">
+            <h2 class="section-title">主要功能</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">多种基组支持</div>
+                    <div class="card-description">
+                        支持平面波(PW)、LCAO和LCAO-in-PW三种基组类型。
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">多种泛函</div>
+                    <div class="card-description">
+                        LDA/GGA、Meta-GGA、混合泛函(PBE0、HSE06)等。
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <div class="card-title">几何优化</div>
+                    <div class="card-description">
+                        支持CG、BFGS、FIRE等优化算法。
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌡️</div>
+                    <div class="card-title">分子动力学</div>
+                    <div class="card-description">
+                        NVT/NVE MD、AIMD、DP势、LJ势等。
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-title">性质计算</div>
+                    <div class="card-description">
+                        应力、极化、PDOS、DFT+U等。
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎬</div>
+                    <div class="card-title">TDDFT</div>
+                    <div class="card-description">
+                        实时时间相关密度泛函理论计算。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 联系方式 -->
+        <div class="section" id="contact">
+            <h2 class="section-title">联系我们</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">📧</div>
+                    <div class="card-title">邮件</div>
+                    <div class="card-description">
+                        <a href="mailto:abacus@ustc.edu.cn">abacus@ustc.edu.cn</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌐</div>
+                    <div class="card-title">GitHub</div>
+                    <div class="card-description">
+                        <a href="https://github.com/abacusmodeling/abacus-develop" target="_blank">abacusmodeling/abacus-develop</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💬</div>
+                    <div class="card-title">论坛</div>
+                    <div class="card-description">
+                        <a href="https://forum.abacusmodeling.com" target="_blank">ABACUS论坛</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer>
+        <p><strong>ABACUS</strong> - Atomic-orbital Based Ab-initio Computation at USTC</p>
+        <p>由中科院量子信息重点实验室何力新教授团队开发</p>
+        <p>© 2007-2025 All Rights Reserved | <a href="https://github.com/abacusmodeling/abacus-develop" target="_blank">GitHub</a> | <a href="https://abacus.deepmodeling.com/" target="_blank">文档</a></p>
+    </footer>
+
+    <script>
+        // 导航栏活动状态
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').slice(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 标签页功能
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabName = btn.getAttribute('data-tab');
+                    
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    btn.classList.add('active');
+                    document.getElementById(tabName).classList.add('active');
+                });
+            });
+        }
+
+        setupTabs();
+    </script>
+<script>
+	    document.addEventListener('DOMContentLoaded', function() {
+	        const body = document.body;
+	        const fontButtons = document.querySelectorAll('.font-btn');
+	        const contentArea = document.querySelector('.container');
+	        const datetimeDisplay = document.getElementById('current-datetime');
+	
+	        if (contentArea) {
+	            contentArea.classList.add('content-area');
+	        }
+	
+	        // 1. 字体大小调整逻辑
+	        const savedFontSize = localStorage.getItem('fontSize') || 'medium';
+	        document.documentElement.className = 'font-' + savedFontSize;
+	
+	        fontButtons.forEach(btn => {
+	            btn.classList.remove('active');
+	            if (btn.dataset.size === savedFontSize) {
+	                btn.classList.add('active');
+	            }
+	        });
+	
+	        fontButtons.forEach(button => {
+	            button.addEventListener('click', function() {
+	                const newSize = this.dataset.size;
+	                document.documentElement.className = 'font-' + newSize;
+	                fontButtons.forEach(btn => btn.classList.remove('active'));
+	                this.classList.add('active');
+	                localStorage.setItem('fontSize', newSize);
+	            });
+	        });
+	
+	        // 2. 搜索功能
+	        const searchBtn = document.querySelector('.search-btn');
+	        const searchInput = document.querySelector('.search-input');
+	
+	        function handleSearch() {
+	            const query = searchInput.value.trim();
+	            if (query) {
+	                alert('正在搜索: ' + query);
+	                // 实际应用中，这里会执行 AJAX 请求或页面跳转到搜索结果页
+	            } else {
+	                alert('请输入搜索内容');
+	            }
+	        }
+	
+	        searchBtn.addEventListener('click', handleSearch);
+	
+	        // 监听回车事件
+	        searchInput.addEventListener('keypress', function(e) {
+	            if (e.key === 'Enter') {
+	                e.preventDefault(); // 阻止默认的表单提交行为
+	                handleSearch();
+	            }
+	        });
+	
+	        // 3. 日期时间卡片显示逻辑
+	        const cardDate = document.getElementById('card-date');
+	        const cardTime = document.getElementById('card-time');
+	
+	        function updateDateTimeCard() {
+	            const now = new Date();
+	            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+	            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+	            
+	            const dateString = now.toLocaleDateString('zh-CN', dateOptions);
+	            const timeString = now.toLocaleTimeString('zh-CN', timeOptions);
+	
+	            if (cardDate) {
+	                cardDate.textContent = dateString;
+	            }
+	            if (cardTime) {
+	                cardTime.textContent = timeString;
+	            }
+	        }
+	
+	        if (cardDate && cardTime) {
+	            updateDateTimeCard();
+	            setInterval(updateDateTimeCard, 1000); // 每秒更新一次时间
+	        }
+	
+	        // 4. 建议反馈功能（示例）
+	        const suggestBtn = document.getElementById('suggest-btn');
+	        if (suggestBtn) {
+	            suggestBtn.addEventListener('click', function() {
+	                const suggestion = prompt('请输入您的建议或反馈:');
+	                if (suggestion) {
+	                    alert('感谢您的建议: "' + suggestion + '"。我们已收到您的反馈。');
+	                    // 实际应用中，这里会执行 AJAX 请求将建议发送到后端
+	                }
+	            });
+	        }
+	    });
+	</script>
+</body>
+</html>
+
